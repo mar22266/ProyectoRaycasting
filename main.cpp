@@ -8,7 +8,7 @@
 
 int main()
 {
-    sf::RenderWindow window(sf::VideoMode(1200, 675), "Raycaster");
+    sf::RenderWindow window(sf::VideoMode(SCREEN_W, SCREEN_H), "Raycaster", sf::Style::Close | sf::Style::Titlebar);
 
     std::vector<std::vector<int>> grid = {
         {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
@@ -25,6 +25,7 @@ int main()
         {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}};
 
     Map map(48.0f, grid);
+
     Player player;
     player.position = sf::Vector2f(50, 50);
 
@@ -46,9 +47,7 @@ int main()
         player.update(deltaTime);
 
         window.clear();
-        map.draw(window);
-        renderer.drawRays(window, player, map);
-        player.draw(window);
+        renderer.draw3dView(window, player, map);
         window.display();
     }
 }

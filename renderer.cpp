@@ -1,22 +1,80 @@
 #include "renderer.h"
+
 #include <SFML/Graphics/PrimitiveType.hpp>
 #include <SFML/Graphics/Vertex.hpp>
 #include <SFML/Graphics/RenderTarget.hpp>
+#include <SFML/Graphics/RectangleShape.hpp>
 #include <SFML/System/Vector2.hpp>
 #include <cmath>
 #include <cstddef>
 #include <limits>
 #include <vector>
+#include "algorithm"
 
 constexpr float PI = 3.141592653589793f;
+constexpr float PLAYER_FOV = 60.0f;
 constexpr size_t MAX_RAYCAST_DEPTH = 16;
+constexpr size_t NUM_RAYS = 150;
+constexpr float COLUMN_WIDTH = SCREEN_W / (float)NUM_RAYS;
+
+struct Ray
+{
+   sf::Vector2f hitPosition;
+   float distance;
+   bool hit;
+};
+
+static Ray castRay(sf::Vector2f start, float angleInDegrees, const Map &map);
+
+void Renderer::draw3dView(sf::RenderTarget &target, const Player &player, const Map &map)
+{
+   float angle = player.angle - PLAYER_FOV / 2.0f;
+   float angleIncrement = PLAYER_FOV / float(NUM_RAYS);
+   for (size_t i = 0; i < NUM_RAYS; i++, angle += angleIncrement)
+
+   {
+      Ray ray = castRay(player.position, angle, map);
+
+      if (ray.hit)
+      {
+         float wallHeight = (map.getCellSize() * SCREEN_H) / ray.distance;
+         if (wallHeight > SCREEN_H)
+         {
+            wallHeight = SCREEN_H;
+         }
+
+         float wallOffset = SCREEN_H / 2.0f - wallHeight / 2.0f;
+         sf::RectangleShape column(sf::Vector2f(COLUMN_WIDTH, wallHeight));
+         column.setPosition(i * COLUMN_WIDTH, wallOffset);
+         target.draw(column);
+      }
+   }
+}
 
 void Renderer::drawRays(sf::RenderTarget &target, const Player &player, const Map &map)
 {
-   float angle = player.angle * PI / 180.0f;
+   for (float angle = player.angle - PLAYER_FOV / 2.0f; angle < player.angle + PLAYER_FOV; angle += 0.5f)
+
+   {
+      Ray ray = castRay(player.position, angle, map);
+
+      if (ray.hit)
+      {
+         sf::Vertex line[] = {
+             sf::Vertex(player.position),
+             sf::Vertex(ray.hitPosition),
+         };
+         target.draw(line, 2, sf::Lines);
+      }
+   }
+}
+Ray castRay(sf::Vector2f start, float angleInDegrees, const Map &map)
+{
+   float angle = angleInDegrees * PI / 180.0f;
    float vtan = -std::tan(angle);
    float htan = -1.0f / std::tan(angle);
    float cellSize = map.getCellSize();
+   bool hit = false;
 
    size_t vdof = 0, hdof = 0;
    float vdist = std::numeric_limits<float>::max();
@@ -25,16 +83,16 @@ void Renderer::drawRays(sf::RenderTarget &target, const Player &player, const Ma
    sf::Vector2f vRayPos, hRayPos, offset;
    if (std::cos(angle) > 0.001f)
    {
-      vRayPos.x = std::floor(player.position.x / cellSize) * cellSize + cellSize;
-      vRayPos.y = (player.position.x - vRayPos.x) * vtan + player.position.y;
+      vRayPos.x = std::floor(start.x / cellSize) * cellSize + cellSize;
+      vRayPos.y = (start.x - vRayPos.x) * vtan + start.y;
 
       offset.x = cellSize;
       offset.y = -offset.x * vtan;
    }
    else if (std::cos(angle) < -0.001f)
    {
-      vRayPos.x = std::floor(player.position.x / cellSize) * cellSize - 0.01f;
-      vRayPos.y = (player.position.x - vRayPos.x) * vtan + player.position.y;
+      vRayPos.x = std::floor(start.x / cellSize) * cellSize - 0.01f;
+      vRayPos.y = (start.x - vRayPos.x) * vtan + start.y;
 
       offset.x = -cellSize;
       offset.y = -offset.x * vtan;
@@ -52,8 +110,9 @@ void Renderer::drawRays(sf::RenderTarget &target, const Player &player, const Ma
 
       if (mapY < grid.size() && mapX < grid[mapY].size() && grid[mapY][mapX])
       {
-         vdist = std::sqrt((vRayPos.x - player.position.x) * (vRayPos.x - player.position.x) +
-                           (vRayPos.y - player.position.y) * (vRayPos.y - player.position.y));
+         hit = true;
+         vdist = std::sqrt((vRayPos.x - start.x) * (vRayPos.x - start.x) +
+                           (vRayPos.y - start.y) * (vRayPos.y - start.y));
          break;
       }
       vRayPos += offset;
@@ -61,16 +120,16 @@ void Renderer::drawRays(sf::RenderTarget &target, const Player &player, const Ma
 
    if (std::sin(angle) > 0.001f)
    {
-      hRayPos.y = std::floor(player.position.y / cellSize) * cellSize + cellSize;
-      hRayPos.x = (player.position.y - hRayPos.y) * htan + player.position.x;
+      hRayPos.y = std::floor(start.y / cellSize) * cellSize + cellSize;
+      hRayPos.x = (start.y - hRayPos.y) * htan + start.x;
 
       offset.y = cellSize;
       offset.x = -offset.y * htan;
    }
    else if (std::sin(angle) < -0.001f)
    {
-      hRayPos.y = std::floor(player.position.y / cellSize) * cellSize - 0.01f;
-      hRayPos.x = (player.position.y - hRayPos.y) * htan + player.position.x;
+      hRayPos.y = std::floor(start.y / cellSize) * cellSize - 0.01f;
+      hRayPos.x = (start.y - hRayPos.y) * htan + start.x;
 
       offset.y = -cellSize;
       offset.x = -offset.y * htan;
@@ -87,16 +146,12 @@ void Renderer::drawRays(sf::RenderTarget &target, const Player &player, const Ma
 
       if (mapY < grid.size() && mapX < grid[mapY].size() && grid[mapY][mapX])
       {
-         hdist = std::sqrt((hRayPos.x - player.position.x) * (hRayPos.x - player.position.x) +
-                           (hRayPos.y - player.position.y) * (hRayPos.y - player.position.y));
+         hit = true;
+         hdist = std::sqrt((hRayPos.x - start.x) * (hRayPos.x - start.x) +
+                           (hRayPos.y - start.y) * (hRayPos.y - start.y));
          break;
       }
       hRayPos += offset;
    }
-
-   sf::Vertex line[] = {
-       sf::Vertex(player.position),
-       sf::Vertex(hdist < vdist ? hRayPos : vRayPos),
-   };
-   target.draw(line, 2, sf::Lines);
+   return Ray{hdist < vdist ? hRayPos : vRayPos, std::min(hdist, vdist), hit};
 }
