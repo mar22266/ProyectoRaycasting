@@ -10,7 +10,7 @@ int main()
 {
     sf::RenderWindow window(sf::VideoMode(SCREEN_W, SCREEN_H), "Raycaster", sf::Style::Close | sf::Style::Titlebar);
 
-    std::vector<std::vector<int>> grid = {
+    /*std::vector<std::vector<int>> grid = {
         {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
         {1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1},
         {1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1},
@@ -23,13 +23,14 @@ int main()
         {1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1},
         {1, 0, 1, 1, 1, 0, 0, 1, 1, 0, 0, 1},
         {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}};
-
-    Map map(48.0f, grid);
+*/
+    Map map(48.0f, "map.png");
 
     Player player;
     player.position = sf::Vector2f(50, 50);
 
     Renderer renderer;
+    renderer.init();
 
     sf::Clock gameClock;
     while (window.isOpen())
