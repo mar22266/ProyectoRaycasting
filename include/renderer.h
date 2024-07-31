@@ -18,8 +18,7 @@ public:
     void draw3dView(sf::RenderTarget &target, const Player &player, const Map &map);
 
 private:
-    sf::Texture wallTexture;
-    sf::Sprite wallSprite;
+    sf::Texture wallTexture, floorTexture;
 };
 
 #endif

@@ -50,5 +50,7 @@ int main()
         window.clear();
         renderer.draw3dView(window, player, map);
         window.display();
+
+        window.setTitle("Raycaster - FPS: " + std::to_string(1.0f / deltaTime));
     }
 }

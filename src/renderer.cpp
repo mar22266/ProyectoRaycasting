@@ -15,6 +15,7 @@
 
 constexpr float PI = 3.141592653589793f;
 constexpr float PLAYER_FOV = 60.0f;
+constexpr float CAMERA_Z = 0.5f * SCREEN_H;
 constexpr size_t MAX_RAYCAST_DEPTH = 64;
 
 struct Ray
@@ -31,14 +32,20 @@ void Renderer::init()
    if (!wallTexture.loadFromFile("./assets/blackbrick.png"))
    {
       std::cerr << "Failed to load wall texture" << std::endl;
-      return;
    }
    if (wallTexture.getSize().x != wallTexture.getSize().y)
    {
       std::cerr << "Wall texture must be square" << std::endl;
-      return;
    }
-   wallSprite = sf::Sprite(wallTexture);
+
+   if (!floorTexture.loadFromFile("./assets/floor2o.png"))
+   {
+      std::cerr << "Failed to load wall texture" << std::endl;
+   }
+   if (floorTexture.getSize().x != floorTexture.getSize().y)
+   {
+      std::cerr << "Wall texture must be square" << std::endl;
+   }
 }
 
 void Renderer::draw3dView(sf::RenderTarget &target, const Player &player, const Map &map)
@@ -48,22 +55,39 @@ void Renderer::draw3dView(sf::RenderTarget &target, const Player &player, const 
    rectangle.setFillColor(sf::Color(135, 206, 235));
    target.draw(rectangle);
 
-   rectangle.setPosition(0, SCREEN_H / 2.0f);
-   rectangle.setFillColor(sf::Color(34, 139, 34));
-   target.draw(rectangle);
-
-   const sf::Color fogColor = sf::Color(100, 170, 250);
+   // const sf::Color fogColor = sf::Color(100, 170, 250);
 
    float radians = player.angle * PI / 180.0f;
    sf::Vector2f direction{std::cos(radians), std::sin(radians)};
-   sf::Vector2f plane{-direction.y, direction.x};
+   sf::Vector2f plane{-direction.y, direction.x * 0.66f};
+   sf::Vector2f position = player.position / map.getCellSize();
+
+   sf::VertexArray floorPixels{sf::Points};
+
+   for (size_t y = SCREEN_H / 2; y < SCREEN_H; y++)
+   {
+      sf::Vector2f rayDirLeft{direction - plane}, rayDirRight{direction + plane};
+      float rowDistance = CAMERA_Z / ((float)y - SCREEN_H / 2);
+
+      sf::Vector2f floorStep = rowDistance * (rayDirRight - rayDirLeft) / SCREEN_W;
+      sf::Vector2f floor = position + rowDistance * rayDirLeft;
+
+      for (size_t x = 0; x < SCREEN_W; x++)
+      {
+         sf::Vector2i cell{floor};
+         float textureSize = floorTexture.getSize().x;
+         sf::Vector2f textCoords{textureSize * (floor - (sf::Vector2f)cell)};
+
+         floorPixels.append(sf::Vertex(sf::Vector2f(x, y), textCoords));
+         floor += floorStep;
+      }
+   }
 
    sf::VertexArray walls{sf::Lines};
-
    for (size_t i = 0; i < SCREEN_W; i++)
    {
       float cameraX = i * 2.0f / SCREEN_W - 1.0f;
-      sf::Vector2f rayPos = player.position / map.getCellSize();
+      sf::Vector2f rayPos = position;
       sf::Vector2f rayDir = direction + plane * cameraX;
 
       sf::Vector2f deltaDist{
@@ -152,6 +176,9 @@ void Renderer::draw3dView(sf::RenderTarget &target, const Player &player, const 
                                  sf::Vector2f(textureX, textureSize)));
       }
    }
-   sf::RenderStates states{&wallTexture};
+   sf::RenderStates states{&floorTexture};
+   target.draw(floorPixels, states);
+
+   states.texture = &wallTexture;
    target.draw(walls, states);
 }
