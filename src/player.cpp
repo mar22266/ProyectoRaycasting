@@ -1,4 +1,4 @@
-#include "player.h"
+#include "../include/player.h"
 
 #include <SFML/Graphics/CircleShape.hpp>
 #include <SFML/Graphics/RenderTarget.hpp>

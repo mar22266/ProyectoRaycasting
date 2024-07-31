@@ -1,4 +1,4 @@
-#include "renderer.h"
+#include "../include/renderer.h"
 
 #include <SFML/Graphics/Color.hpp>
 #include <SFML/Graphics/PrimitiveType.hpp>
@@ -32,7 +32,7 @@ static Ray castRay(sf::Vector2f start, float angleInDegrees, const Map &map);
 
 void Renderer::init()
 {
-   if (!wallTexture.loadFromFile("wall_texture.png"))
+   if (!wallTexture.loadFromFile("./assets/wall_texture.png"))
    {
       std::cerr << "Failed to load wall texture" << std::endl;
       return;

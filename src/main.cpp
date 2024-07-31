@@ -2,9 +2,9 @@
 #include <SFML/Window/Event.hpp>
 #include <SFML/Window/VideoMode.hpp>
 
-#include "map.h"
-#include "player.h"
-#include "renderer.h"
+#include "../include/map.h"
+#include "../include/player.h"
+#include "../include/renderer.h"
 
 int main()
 {
@@ -24,7 +24,7 @@ int main()
         {1, 0, 1, 1, 1, 0, 0, 1, 1, 0, 0, 1},
         {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}};
 */
-    Map map(48.0f, "map.png");
+    Map map(48.0f, "./assets/map.png");
 
     Player player;
     player.position = sf::Vector2f(50, 50);
