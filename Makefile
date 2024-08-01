@@ -1,5 +1,5 @@
 CC = g++
-C_FLAGS = -MMD -MP -Iinclude
+C_FLAGS = -MMD -MP -Iinclude -O3
 L_FLAGS = -lsfml-graphics -lsfml-window -lsfml-system
 
 BIN = raycaster

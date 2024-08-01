@@ -1,14 +1,18 @@
 #include "../include/renderer.h"
 
 #include <SFML/Graphics/Color.hpp>
+#include <SFML/Graphics/Image.hpp>
 #include <SFML/Graphics/PrimitiveType.hpp>
 #include <SFML/Graphics/Vertex.hpp>
+#include <SFML/Graphics/Texture.hpp>
+#include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Graphics/RenderTarget.hpp>
 #include <SFML/Graphics/RectangleShape.hpp>
 #include <SFML/System/Vector2.hpp>
 #include <cmath>
 #include <cstddef>
 #include <limits>
+#include <cstdint>
 #include <vector>
 #include "algorithm"
 #include <iostream>
@@ -29,6 +33,12 @@ struct Ray
 
 void Renderer::init()
 {
+   if (!skyTexture.loadFromFile("./assets/skyD3.png"))
+   {
+      std::cerr << "Failed to load sky texture" << std::endl;
+   }
+   skyTexture.setRepeated(true);
+
    if (!wallTexture.loadFromFile("./assets/blackbrick.png"))
    {
       std::cerr << "Failed to load wall texture" << std::endl;
@@ -38,11 +48,11 @@ void Renderer::init()
       std::cerr << "Wall texture must be square" << std::endl;
    }
 
-   if (!floorTexture.loadFromFile("./assets/floor2o.png"))
+   if (!floorImage.loadFromFile("./assets/floor2o.png"))
    {
       std::cerr << "Failed to load wall texture" << std::endl;
    }
-   if (floorTexture.getSize().x != floorTexture.getSize().y)
+   if (floorImage.getSize().x != floorImage.getSize().y)
    {
       std::cerr << "Wall texture must be square" << std::endl;
    }
@@ -50,19 +60,26 @@ void Renderer::init()
 
 void Renderer::draw3dView(sf::RenderTarget &target, const Player &player, const Map &map)
 {
-
-   sf::RectangleShape rectangle(sf::Vector2(SCREEN_W, SCREEN_H / 2.0f));
-   rectangle.setFillColor(sf::Color(135, 206, 235));
-   target.draw(rectangle);
-
-   // const sf::Color fogColor = sf::Color(100, 170, 250);
-
    float radians = player.angle * PI / 180.0f;
    sf::Vector2f direction{std::cos(radians), std::sin(radians)};
    sf::Vector2f plane{-direction.y, direction.x * 0.66f};
    sf::Vector2f position = player.position / map.getCellSize();
 
-   sf::VertexArray floorPixels{sf::Points};
+   int xOffset = SCREEN_W / PLAYER_TURN_SPEED * player.angle;
+   while (xOffset < 0)
+   {
+      xOffset += skyTexture.getSize().x;
+   }
+
+   sf::Vertex sky[] = {
+       sf::Vertex(sf::Vector2f(0.0f, 0.0f), sf::Vector2f(xOffset, 0.0f)),
+       sf::Vertex(sf::Vector2f(0.0f, SCREEN_H), sf::Vector2f(xOffset, skyTexture.getSize().y)),
+       sf::Vertex(sf::Vector2f(SCREEN_W, SCREEN_H), sf::Vector2f(xOffset + skyTexture.getSize().x, skyTexture.getSize().y)),
+       sf::Vertex(sf::Vector2f(SCREEN_W, 0.0f), sf::Vector2f(xOffset + skyTexture.getSize().x, 0.0f))};
+
+   target.draw(sky, 4, sf::Quads, sf::RenderStates(&skyTexture));
+
+   uint8_t floorPixels[(size_t)SCREEN_W * (size_t)SCREEN_H * 4]{};
 
    for (size_t y = SCREEN_H / 2; y < SCREEN_H; y++)
    {
@@ -75,13 +92,25 @@ void Renderer::draw3dView(sf::RenderTarget &target, const Player &player, const 
       for (size_t x = 0; x < SCREEN_W; x++)
       {
          sf::Vector2i cell{floor};
-         float textureSize = floorTexture.getSize().x;
-         sf::Vector2f textCoords{textureSize * (floor - (sf::Vector2f)cell)};
-
-         floorPixels.append(sf::Vertex(sf::Vector2f(x, y), textCoords));
+         float textureSize = floorImage.getSize().x;
+         sf::Vector2i texCoords{textureSize * (floor - (sf::Vector2f)cell)};
+         texCoords.x &= (int)textureSize - 1;
+         texCoords.y &= (int)textureSize - 1;
+         sf::Color color = floorImage.getPixel(texCoords.x, texCoords.y);
+         floorPixels[(x + y * (size_t)SCREEN_W) * 4 + 0] = color.r;
+         floorPixels[(x + y * (size_t)SCREEN_W) * 4 + 1] = color.g;
+         floorPixels[(x + y * (size_t)SCREEN_W) * 4 + 2] = color.b;
+         floorPixels[(x + y * (size_t)SCREEN_W) * 4 + 3] = color.a;
          floor += floorStep;
       }
    }
+
+   sf::Image image;
+   image.create(SCREEN_W, SCREEN_H, floorPixels);
+   sf::Texture texture;
+   texture.loadFromImage(image);
+   sf::Sprite sprite(texture);
+   target.draw(sprite);
 
    sf::VertexArray walls{sf::Lines};
    for (size_t i = 0; i < SCREEN_W; i++)
@@ -176,9 +205,6 @@ void Renderer::draw3dView(sf::RenderTarget &target, const Player &player, const 
                                  sf::Vector2f(textureX, textureSize)));
       }
    }
-   sf::RenderStates states{&floorTexture};
-   target.draw(floorPixels, states);
-
-   states.texture = &wallTexture;
+   sf::RenderStates states{&wallTexture};
    target.draw(walls, states);
 }

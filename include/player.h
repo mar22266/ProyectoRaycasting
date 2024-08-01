@@ -4,6 +4,8 @@
 #include <SFML/Graphics/RenderTarget.hpp>
 #include <SFML/System/Vector2.hpp>
 
+constexpr float PLAYER_TURN_SPEED = 10000.0f;
+
 class Player
 {
 public:
@@ -13,5 +15,4 @@ public:
     sf::Vector2f position;
     float angle;
 };
-
 #endif // _PLAYER_H

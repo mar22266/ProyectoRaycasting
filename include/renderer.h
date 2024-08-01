@@ -1,9 +1,10 @@
 #ifndef _RENDERER_H_
 #define _RENDERER_H_
 
-#include <SFML/Graphics/RenderTarget.hpp>
+#include <SFML/Graphics/RenderStates.hpp>
 #include <SFML/Graphics/Texture.hpp>
 #include <SFML/Graphics/Sprite.hpp>
+#include <SFML/Graphics/Image.hpp>
 
 #include "player.h"
 #include "map.h"
@@ -18,7 +19,8 @@ public:
     void draw3dView(sf::RenderTarget &target, const Player &player, const Map &map);
 
 private:
-    sf::Texture wallTexture, floorTexture;
+    sf::Texture wallTexture, skyTexture;
+    sf::Image floorImage;
 };
 
 #endif
