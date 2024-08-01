@@ -11,7 +11,7 @@
 #include <vector>
 
 Map::Map(float cellSize, int width, int height)
-    : cellSize(cellSize), grid(height, std::vector(width, sf::Color::Black)) {}
+    : cellSize(cellSize), grid(height, std::vector(width, 0)) {}
 
 Map::Map(float cellSize, const std::string &filename)
     : cellSize(cellSize)
@@ -22,12 +22,12 @@ Map::Map(float cellSize, const std::string &filename)
         std::cerr << "Failed to load image file: " << filename << std::endl;
         return;
     }
-    grid = std::vector(image.getSize().y, std::vector(image.getSize().x, sf::Color::Black));
+    grid = std::vector(image.getSize().y, std::vector(image.getSize().x, 0));
     for (size_t y = 0; y < image.getSize().y; y++)
     {
         for (size_t x = 0; x < image.getSize().x; x++)
         {
-            grid[y][x] = image.getPixel(x, y);
+            grid[y][x] = image.getPixel(x, y) == sf::Color::Black ? 0 : 1;
         }
     }
 }
@@ -40,7 +40,7 @@ void Map::draw(sf::RenderTarget &target)
     }
 
     sf::RectangleShape background(sf::Vector2f((float)grid[0].size() * cellSize, (float)grid.size() * cellSize));
-    background.setFillColor(sf::Color::Green);
+    background.setFillColor(sf::Color::Yellow);
     target.draw(background);
 
     sf::RectangleShape cell(sf::Vector2f(cellSize * 0.95f, cellSize * 0.95f));
@@ -49,7 +49,7 @@ void Map::draw(sf::RenderTarget &target)
     {
         for (std::size_t x = 0; x < grid[y].size(); x++)
         {
-            cell.setFillColor(grid[y][x]);
+            cell.setFillColor(grid[y][x] ? sf::Color::White : sf::Color::Black);
 
             cell.setPosition(sf::Vector2f(x, y) * cellSize + sf::Vector2f(cellSize * 0.025f, cellSize * 0.025f));
             target.draw(cell);
@@ -57,7 +57,7 @@ void Map::draw(sf::RenderTarget &target)
     }
 }
 
-const std::vector<std::vector<sf::Color>> &Map::getGrid() const
+const MapGrid &Map::getGrid() const
 {
     return grid;
 }

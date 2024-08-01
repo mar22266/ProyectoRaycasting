@@ -1,9 +1,10 @@
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Window/Event.hpp>
 #include <SFML/Window/VideoMode.hpp>
-#include <SFML/Graphics.hpp>
-#include <iostream>
-#include <deque>
+#include <SFML/Window/WindowStyle.hpp>
+#include <SFML/System/Clock.hpp>
+#include <SFML/Window/Keyboard.hpp>
+#include <string>
 
 #include "../include/map.h"
 #include "../include/player.h"
@@ -12,29 +13,24 @@
 int main()
 {
     sf::RenderWindow window(sf::VideoMode(SCREEN_W, SCREEN_H), "Raycaster", sf::Style::Close | sf::Style::Titlebar);
+    window.setVerticalSyncEnabled(true);
 
     Map map(48.0f, "./assets/map.png");
-
     Player player;
     player.position = sf::Vector2f(50, 50);
-
     Renderer renderer;
     renderer.init();
 
-    sf::Clock gameClock;
-    std::deque<float> frameTimes;       // To store the frame times
-    const size_t maxFrameSamples = 100; // Maximum samples for averaging
+    enum class State
+    {
+        Editor,
+        Game
+    } state = State::Game;
 
+    sf::Clock gameClock;
     while (window.isOpen())
     {
         float deltaTime = gameClock.restart().asSeconds();
-        frameTimes.push_back(deltaTime);
-
-        if (frameTimes.size() > maxFrameSamples)
-        {
-            frameTimes.pop_front(); // Maintain the size of the deque
-        }
-
         sf::Event event;
         while (window.pollEvent(event))
         {
@@ -42,27 +38,23 @@ int main()
             {
                 window.close();
             }
+            else if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape)
+            {
+                state = state == State::Game ? State::Editor : State::Game;
+            }
         }
-
-        player.update(deltaTime);
 
         window.clear();
-        renderer.draw3dView(window, player, map);
+        if (state == State::Game)
+        {
+            player.update(deltaTime);
+            renderer.draw3dView(window, player, map);
+        }
+        else if (state == State::Editor)
+        {
+            map.draw(window);
+        }
         window.display();
-
-        // Calculate the average frame time every frame
-        float averageFrameTime = 0.0f;
-        for (float ft : frameTimes)
-        {
-            averageFrameTime += ft;
-        }
-        averageFrameTime /= frameTimes.size();
-
-        // Update the window title with the FPS, calculated as the inverse of the average frame time
-        if (!frameTimes.empty())
-        {
-            int fps = static_cast<int>(1.0f / averageFrameTime);
-            window.setTitle("Raycaster - FPS: " + std::to_string(fps));
-        }
+        window.setTitle("Raycaster - FPS: " + std::to_string(1.0f / deltaTime));
     }
 }
