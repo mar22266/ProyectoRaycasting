@@ -22,17 +22,11 @@ constexpr float PLAYER_FOV = 60.0f;
 constexpr float CAMERA_Z = 0.5f * SCREEN_H;
 constexpr size_t MAX_RAYCAST_DEPTH = 64;
 
-struct Ray
-{
-   sf::Vector2f hitPosition;
-   sf::Vector2u mapPosition;
-   float distance;
-   bool hit;
-   bool isHitVertical;
-};
-
 void Renderer::init()
 {
+   floorBuffer.create(SCREEN_W, SCREEN_H);
+   floorBufferSprite.setTexture(floorBuffer);
+
    if (!skyTexture.loadFromFile("./assets/skyD3.png"))
    {
       std::cerr << "Failed to load sky texture" << std::endl;
@@ -105,12 +99,8 @@ void Renderer::draw3dView(sf::RenderTarget &target, const Player &player, const 
       }
    }
 
-   sf::Image image;
-   image.create(SCREEN_W, SCREEN_H, floorPixels);
-   sf::Texture texture;
-   texture.loadFromImage(image);
-   sf::Sprite sprite(texture);
-   target.draw(sprite);
+   floorBuffer.update(floorPixels);
+   target.draw(floorBufferSprite);
 
    sf::VertexArray walls{sf::Lines};
    for (size_t i = 0; i < SCREEN_W; i++)
