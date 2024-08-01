@@ -7,6 +7,7 @@
 #include <string>
 
 #include "../include/map.h"
+#include "../include/editor.h"
 #include "../include/player.h"
 #include "../include/renderer.h"
 
@@ -16,10 +17,15 @@ int main()
     window.setVerticalSyncEnabled(true);
 
     Map map(48.0f, "./assets/map.png");
+
     Player player;
     player.position = sf::Vector2f(50, 50);
+
     Renderer renderer;
     renderer.init();
+
+    Editor editor{};
+    editor.init(window);
 
     enum class State
     {
@@ -42,16 +48,22 @@ int main()
             {
                 state = state == State::Game ? State::Editor : State::Game;
             }
+            if (state == State::Editor)
+            {
+                editor.handleEvent(event);
+            }
         }
 
         window.clear();
         if (state == State::Game)
         {
+            window.setView(window.getDefaultView());
             player.update(deltaTime);
             renderer.draw3dView(window, player, map);
         }
-        else if (state == State::Editor)
+        else
         {
+            editor.run(window, map);
             map.draw(window);
         }
         window.display();
