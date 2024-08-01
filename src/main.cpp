@@ -1,6 +1,9 @@
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Window/Event.hpp>
 #include <SFML/Window/VideoMode.hpp>
+#include <SFML/Graphics.hpp>
+#include <iostream>
+#include <deque>
 
 #include "../include/map.h"
 #include "../include/player.h"
@@ -19,9 +22,19 @@ int main()
     renderer.init();
 
     sf::Clock gameClock;
+    std::deque<float> frameTimes;       // To store the frame times
+    const size_t maxFrameSamples = 100; // Maximum samples for averaging
+
     while (window.isOpen())
     {
         float deltaTime = gameClock.restart().asSeconds();
+        frameTimes.push_back(deltaTime);
+
+        if (frameTimes.size() > maxFrameSamples)
+        {
+            frameTimes.pop_front(); // Maintain the size of the deque
+        }
+
         sf::Event event;
         while (window.pollEvent(event))
         {
@@ -37,6 +50,19 @@ int main()
         renderer.draw3dView(window, player, map);
         window.display();
 
-        window.setTitle("Raycaster - FPS: " + std::to_string(1.0f / deltaTime));
+        // Calculate the average frame time every frame
+        float averageFrameTime = 0.0f;
+        for (float ft : frameTimes)
+        {
+            averageFrameTime += ft;
+        }
+        averageFrameTime /= frameTimes.size();
+
+        // Update the window title with the FPS, calculated as the inverse of the average frame time
+        if (!frameTimes.empty())
+        {
+            int fps = static_cast<int>(1.0f / averageFrameTime);
+            window.setTitle("Raycaster - FPS: " + std::to_string(fps));
+        }
     }
 }
