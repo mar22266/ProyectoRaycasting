@@ -5,28 +5,36 @@
 #include <SFML/System/Clock.hpp>
 #include <SFML/Window/Keyboard.hpp>
 #include <string>
+#include <SFML/System/Time.hpp>
 
 #include "../include/map.h"
+#include "../include/imgui-SFML.h"
+#include "../include/imgui.h"
 #include "../include/editor.h"
 #include "../include/player.h"
 #include "../include/renderer.h"
+#include <iostream>
 
 int main()
 {
-    sf::RenderWindow window(sf::VideoMode(SCREEN_W, SCREEN_H), "Raycaster", sf::Style::Close | sf::Style::Titlebar);
+    sf::RenderWindow window(sf::VideoMode(SCREEN_W, SCREEN_H), "Raycaster",
+                            sf::Style::Close | sf::Style::Titlebar);
     window.setVerticalSyncEnabled(true);
+
+    if (!ImGui::SFML::Init(window))
+    {
+        std::cerr << "Failed to init ImGui\n";
+        return 1;
+    }
 
     Map map(48.0f, "./assets/map.png");
 
-    Player player;
+    Player player{};
     player.position = sf::Vector2f(50, 50);
-
-    Renderer renderer;
+    Renderer renderer{};
     renderer.init();
-
     Editor editor{};
     editor.init(window);
-
     enum class State
     {
         Editor,
@@ -36,7 +44,9 @@ int main()
     sf::Clock gameClock;
     while (window.isOpen())
     {
-        float deltaTime = gameClock.restart().asSeconds();
+        sf::Time deltaTime = gameClock.restart();
+        ImGui::SFML::Update(window, deltaTime);
+
         sf::Event event;
         while (window.pollEvent(event))
         {
@@ -44,7 +54,8 @@ int main()
             {
                 window.close();
             }
-            else if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape)
+            else if (event.type == sf::Event::KeyPressed &&
+                     event.key.code == sf::Keyboard::Escape)
             {
                 state = state == State::Game ? State::Editor : State::Game;
             }
@@ -52,13 +63,17 @@ int main()
             {
                 editor.handleEvent(event);
             }
+
+            ImGui::SFML::ProcessEvent(window, event);
         }
+
+        ImGui::ShowDemoWindow();
 
         window.clear();
         if (state == State::Game)
         {
             window.setView(window.getDefaultView());
-            player.update(deltaTime);
+            player.update(deltaTime.asSeconds());
             renderer.draw3dView(window, player, map);
         }
         else
@@ -66,7 +81,13 @@ int main()
             editor.run(window, map);
             map.draw(window);
         }
+
+        ImGui::SFML::Render(window);
         window.display();
-        window.setTitle("Raycaster - FPS: " + std::to_string(1.0f / deltaTime));
+
+        window.setTitle("Raycaster | " +
+                        std::to_string(1.0f / deltaTime.asSeconds()));
     }
+
+    ImGui::SFML::Shutdown();
 }
