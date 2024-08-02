@@ -17,6 +17,7 @@
 
 void Editor::init(sf::RenderWindow &window)
 {
+    currentLayer = Map::LAYER_WALLS;
     view = window.getView();
     cell.setFillColor(sf::Color::Green);
 }
@@ -30,7 +31,6 @@ void Editor::run(sf::RenderWindow &window, Map &map)
             {
                 ImGuiFileDialog::Instance()->OpenDialog("OpenDialog", "Open", ".map");
             }
-
             if (ImGui::MenuItem("Save"))
             {
                 if (savedFileName.empty())
@@ -42,18 +42,15 @@ void Editor::run(sf::RenderWindow &window, Map &map)
                     map.save(savedFileName);
                 }
             }
-
             if (ImGui::MenuItem("Save As"))
             {
                 ImGuiFileDialog::Instance()->OpenDialog("SaveDialog", "Save As",
                                                         ".map");
             }
-
             ImGui::EndMenu();
         }
         ImGui::EndMainMenuBar();
     }
-
     if (ImGuiFileDialog::Instance()->Display("SaveDialog"))
     {
         if (ImGuiFileDialog::Instance()->IsOk())
@@ -61,10 +58,8 @@ void Editor::run(sf::RenderWindow &window, Map &map)
             savedFileName = ImGuiFileDialog::Instance()->GetFilePathName();
             map.save(savedFileName);
         }
-
         ImGuiFileDialog::Instance()->Close();
     }
-
     if (ImGuiFileDialog::Instance()->Display("OpenDialog"))
     {
         if (ImGuiFileDialog::Instance()->IsOk())
@@ -72,10 +67,8 @@ void Editor::run(sf::RenderWindow &window, Map &map)
             savedFileName = ImGuiFileDialog::Instance()->GetFilePathName();
             map.load(savedFileName);
         }
-
         ImGuiFileDialog::Instance()->Close();
     }
-
     ImGui::Begin("Editing Options");
     ImGui::Text("Texture No.: ");
     ImGui::InputInt("##tex_no", &textureNo);
@@ -116,15 +109,19 @@ void Editor::run(sf::RenderWindow &window, Map &map)
         cell.setSize(sf::Vector2f(map.getCellSize(), map.getCellSize()));
         cell.setPosition((sf::Vector2f)mapPos * map.getCellSize());
         window.draw(cell);
+
         if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
         {
             map.setMapCell(
-                mapPos.x, mapPos.y,
+                mapPos.x, mapPos.y, currentLayer,
                 sf::Keyboard::isKeyPressed(sf::Keyboard::LShift) ? 0 : textureNo + 1);
         }
     }
+
+    map.draw(window, currentLayer);
     window.setView(view);
 }
+
 void Editor::handleEvent(const sf::Event &event)
 {
     if (event.type == sf::Event::MouseWheelScrolled)

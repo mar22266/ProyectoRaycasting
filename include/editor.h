@@ -9,13 +9,11 @@
 #include <string>
 
 #include "map.h"
-
 class Editor
 {
 public:
     void init(sf::RenderWindow &window);
     void run(sf::RenderWindow &window, Map &map);
-
     void handleEvent(const sf::Event &event);
     std::string savedFileName;
 
@@ -25,5 +23,7 @@ private:
     sf::Vector2i lastMousePos;
     sf::View view;
     int textureNo;
+    int currentLayer;
 };
+
 #endif // !_EDITOR_H

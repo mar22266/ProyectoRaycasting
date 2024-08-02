@@ -83,8 +83,7 @@ int main()
         else
         {
             editor.run(window, map);
-            map.draw(window);
-        }
+                }
 
         ImGui::SFML::Render(window);
         window.display();
