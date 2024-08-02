@@ -2,11 +2,13 @@
 #define _RESOURCES_H
 
 #include <SFML/Graphics/Texture.hpp>
+#include <SFML/Graphics/Image.hpp>
 
 class Resources
 {
 public:
-    static sf::Texture wallTexture; // Declaration of static member
+    static sf::Image texturesImage;
+    static sf::Texture textures;
 };
 
 #endif // _RESOURCES_H

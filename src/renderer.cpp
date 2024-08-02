@@ -22,27 +22,18 @@ constexpr float PI = 3.141592653589793f;
 constexpr float PLAYER_FOV = 60.0f;
 constexpr float CAMERA_Z = 0.5f * SCREEN_H;
 constexpr size_t MAX_RAYCAST_DEPTH = 64;
-
 void Renderer::init()
 {
-   floorBuffer.create(SCREEN_W, SCREEN_H);
-   floorBufferSprite.setTexture(floorBuffer);
+   screenBuffer.create(SCREEN_W, SCREEN_H);
+   screenBufferSprite.setTexture(screenBuffer);
 
    if (!skyTexture.loadFromFile("./assets/skyD3.png"))
    {
-      std::cerr << "Failed to load sky texture" << std::endl;
+      std::cerr << "Failed to load sky_texture.png!\n";
    }
    skyTexture.setRepeated(true);
-
-   if (!floorImage.loadFromFile("./assets/floor2o.png"))
-   {
-      std::cerr << "Failed to load wall texture" << std::endl;
-   }
-   if (floorImage.getSize().x != floorImage.getSize().y)
-   {
-      std::cerr << "Wall texture must be square" << std::endl;
-   }
 }
+
 void Renderer::draw3dView(sf::RenderTarget &target, const Player &player,
                           const Map &map)
 {
@@ -66,7 +57,8 @@ void Renderer::draw3dView(sf::RenderTarget &target, const Player &player,
                   sf::Vector2f(xOffset + skyTexture.getSize().x, 0.0f)),
    };
    target.draw(sky, 4, sf::Quads, sf::RenderStates(&skyTexture));
-   uint8_t floorPixels[(size_t)SCREEN_W * (size_t)SCREEN_H * 4]{};
+
+   uint8_t screenPixels[(size_t)SCREEN_W * (size_t)SCREEN_H * 4]{};
    for (size_t y = SCREEN_H / 2; y < SCREEN_H; y++)
    {
       sf::Vector2f rayDirLeft{direction - plane}, rayDirRight{direction + plane};
@@ -77,20 +69,54 @@ void Renderer::draw3dView(sf::RenderTarget &target, const Player &player,
       for (size_t x = 0; x < SCREEN_W; x++)
       {
          sf::Vector2i cell{floor};
-         float textureSize = floorImage.getSize().x;
+
+         float textureSize = Resources::texturesImage.getSize().y;
          sf::Vector2i texCoords{textureSize * (floor - (sf::Vector2f)cell)};
          texCoords.x &= (int)textureSize - 1;
          texCoords.y &= (int)textureSize - 1;
-         sf::Color color = floorImage.getPixel(texCoords.x, texCoords.y);
-         floorPixels[(x + y * (size_t)SCREEN_W) * 4 + 0] = color.r;
-         floorPixels[(x + y * (size_t)SCREEN_W) * 4 + 1] = color.g;
-         floorPixels[(x + y * (size_t)SCREEN_W) * 4 + 2] = color.b;
-         floorPixels[(x + y * (size_t)SCREEN_W) * 4 + 3] = color.a;
+
+         int floorTex = map.getMapCell(floor.x, floor.y, Map::LAYER_FLOOR);
+         int ceilTex = map.getMapCell(floor.x, floor.y, Map::LAYER_CEILING);
+         sf::Color floorColor, ceilingColor;
+         if (floorTex == 0)
+         {
+            floorColor = sf::Color(70, 70, 70);
+         }
+         else
+         {
+            floorColor = Resources::texturesImage.getPixel(
+                (floorTex - 1) * textureSize + texCoords.x, texCoords.y);
+         }
+         if (ceilTex == 0)
+         {
+            ceilingColor = sf::Color(0, 0, 0, 0);
+         }
+         else
+         {
+            ceilingColor = Resources::texturesImage.getPixel(
+                (ceilTex - 1) * textureSize + texCoords.x, texCoords.y);
+         }
+         screenPixels[(x + y * (size_t)SCREEN_W) * 4 + 0] = floorColor.r;
+         screenPixels[(x + y * (size_t)SCREEN_W) * 4 + 1] = floorColor.g;
+         screenPixels[(x + y * (size_t)SCREEN_W) * 4 + 2] = floorColor.b;
+         screenPixels[(x + y * (size_t)SCREEN_W) * 4 + 3] = floorColor.a;
+
+         screenPixels[(x + ((size_t)SCREEN_H - y - 1) * (size_t)SCREEN_W) * 4 +
+                      0] = ceilingColor.r;
+         screenPixels[(x + ((size_t)SCREEN_H - y - 1) * (size_t)SCREEN_W) * 4 +
+                      1] = ceilingColor.g;
+         screenPixels[(x + ((size_t)SCREEN_H - y - 1) * (size_t)SCREEN_W) * 4 +
+                      2] = ceilingColor.b;
+         screenPixels[(x + ((size_t)SCREEN_H - y - 1) * (size_t)SCREEN_W) * 4 +
+                      3] = ceilingColor.a;
+
          floor += floorStep;
       }
    }
-   floorBuffer.update(floorPixels);
-   target.draw(floorBufferSprite);
+
+   screenBuffer.update(screenPixels);
+   target.draw(screenBufferSprite);
+
    sf::VertexArray walls{sf::Lines};
    for (size_t i = 0; i < SCREEN_W; i++)
    {
@@ -124,7 +150,6 @@ void Renderer::draw3dView(sf::RenderTarget &target, const Player &player,
          step.y = 1;
          sideDist.y = (mapPos.y - rayPos.y + 1.0f) * deltaDist.y;
       }
-
       int hit{}, isHitVertical{};
       size_t depth = 0;
       while (hit == 0 && depth < MAX_RAYCAST_DEPTH)
@@ -141,21 +166,18 @@ void Renderer::draw3dView(sf::RenderTarget &target, const Player &player,
             mapPos.y += step.y;
             isHitVertical = true;
          }
-
          hit = map.getMapCell(mapPos.x, mapPos.y, Map::LAYER_WALLS);
          depth++;
       }
-
       if (hit > 0)
       {
          float perpWallDist =
              isHitVertical ? sideDist.y - deltaDist.y : sideDist.x - deltaDist.x;
          float wallHeight = SCREEN_H / perpWallDist;
-
          float wallStart = (-wallHeight + SCREEN_H) / 2.0f;
          float wallEnd = (wallHeight + SCREEN_H) / 2.0f;
 
-         float textureSize = Resources::wallTexture.getSize().y;
+         float textureSize = Resources::textures.getSize().y;
 
          float wallX = isHitVertical ? rayPos.x + perpWallDist * rayDir.x
                                      : rayPos.y + perpWallDist * rayDir.y;
@@ -168,7 +190,6 @@ void Renderer::draw3dView(sf::RenderTarget &target, const Player &player,
          }
          sf::Color color =
              sf::Color(255 * brightness, 255 * brightness, 255 * brightness);
-
          walls.append(
              sf::Vertex(sf::Vector2f((float)i, wallStart), color,
                         sf::Vector2f(textureX + (hit - 1) * textureSize, 0.0f)));
@@ -178,6 +199,6 @@ void Renderer::draw3dView(sf::RenderTarget &target, const Player &player,
       }
    }
 
-   sf::RenderStates states{&Resources::wallTexture};
+   sf::RenderStates states{&Resources::textures};
    target.draw(walls, states);
 }

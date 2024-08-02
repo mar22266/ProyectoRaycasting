@@ -19,11 +19,10 @@ public:
     void draw3dView(sf::RenderTarget &target, const Player &player, const Map &map);
 
 private:
-    sf::Texture wallTexture, skyTexture;
-    sf::Image floorImage;
+    sf::Texture skyTexture;
 
-    sf::Texture floorBuffer;
-    sf::Sprite floorBufferSprite;
+    sf::Texture screenBuffer;
+    sf::Sprite screenBufferSprite;
 };
 
 #endif

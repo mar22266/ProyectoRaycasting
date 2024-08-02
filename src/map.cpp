@@ -16,22 +16,20 @@
 #include <vector>
 #include <ios>
 #include <resources.h>
-
 Map::Map(float cellSize) : cellSize(cellSize), grid() {}
-
 void Map::draw(sf::RenderTarget &target, int layer) const
 {
     if (grid.empty())
     {
         return;
     }
-    int textureSize = Resources::wallTexture.getSize().y;
+
+    int textureSize = Resources::textures.getSize().y;
     sf::Vector2f size{cellSize * 0.95f, cellSize * 0.95f};
-    sf::Sprite sprite{Resources::wallTexture,
+    sf::Sprite sprite{Resources::textures,
                       sf::IntRect(0, 0, textureSize, textureSize)};
     sprite.setScale(size / (float)textureSize);
     sf::RectangleShape cell(sf::Vector2f(cellSize * 0.95f, cellSize * 0.95f));
-
     for (size_t y = 0; y < grid.size(); y++)
     {
         for (size_t x = 0; x < grid[y].size(); x++)
@@ -46,7 +44,7 @@ void Map::draw(sf::RenderTarget &target, int layer) const
             }
             else
             {
-                cell.setFillColor(sf::Color(177, 156, 217));
+                cell.setFillColor(sf::Color(70, 70, 70));
                 cell.setPosition(sf::Vector2f(x, y) * cellSize +
                                  sf::Vector2f(cellSize * 0.025f, cellSize * 0.025f));
                 target.draw(cell);
@@ -54,9 +52,7 @@ void Map::draw(sf::RenderTarget &target, int layer) const
         }
     }
 }
-
 float Map::getCellSize() const { return cellSize; }
-
 int Map::getMapCell(int x, int y, int layer) const
 {
     if (layer < NUM_LAYERS && y >= 0 && y < grid.size() && x >= 0 &&
@@ -70,7 +66,7 @@ int Map::getMapCell(int x, int y, int layer) const
     }
 }
 
-void Map::setMapCell(int x, int y, int value, int layer)
+void Map::setMapCell(int x, int y, int layer, int value)
 {
     if (layer < NUM_LAYERS && y >= 0 && y < grid.size() && x >= 0 &&
         x < grid[y].size())
@@ -78,7 +74,6 @@ void Map::setMapCell(int x, int y, int value, int layer)
         grid[y][x][layer] = value;
     }
 }
-
 void Map::load(const std::filesystem::path &path)
 {
     std::ifstream in{path, std::ios::in | std::ios::binary};
@@ -89,18 +84,16 @@ void Map::load(const std::filesystem::path &path)
     size_t w, h;
     in.read(reinterpret_cast<char *>(&w), sizeof(w));
     in.read(reinterpret_cast<char *>(&h), sizeof(h));
-
     grid = std::vector(h, std::vector(w, std::array<int, NUM_LAYERS>()));
     for (size_t y = 0; y < grid.size(); y++)
     {
         for (size_t x = 0; x < grid[y].size(); x++)
         {
             in.read(reinterpret_cast<char *>(grid[y][x].data()),
-                    sizeof(grid[y][x][0] * NUM_LAYERS));
+                    sizeof(grid[y][x][0]) * NUM_LAYERS);
         }
     }
 }
-
 void Map::save(const std::filesystem::path &path) const
 {
     std::ofstream out{path, std::ios::out | std::ios::binary};
@@ -116,13 +109,25 @@ void Map::save(const std::filesystem::path &path) const
     size_t w = grid[0].size();
     out.write(reinterpret_cast<const char *>(&w), sizeof(w));
     out.write(reinterpret_cast<const char *>(&h), sizeof(h));
-
     for (size_t y = 0; y < grid.size(); y++)
     {
         for (size_t x = 0; x < grid[y].size(); x++)
         {
             out.write(reinterpret_cast<const char *>(grid[y][x].data()),
-                      sizeof(grid[y][x][0] * NUM_LAYERS));
+                      sizeof(grid[y][x][0]) * NUM_LAYERS);
+        }
+    }
+}
+void Map::fill(int layer, int value)
+{
+    if (layer < NUM_LAYERS)
+    {
+        for (auto &column : grid)
+        {
+            for (auto &cell : column)
+            {
+                cell[layer] = value;
+            }
         }
     }
 }

@@ -29,11 +29,13 @@ int main()
     }
 
     Map map(48.0f);
+
     map.load("./assets/test.map");
-    if (!Resources::wallTexture.loadFromFile("./assets/wall_textures.png"))
+    if (!Resources::texturesImage.loadFromFile("./assets/textures.png"))
     {
         std::cerr << "Failed to load wall texture";
     }
+    Resources::textures.loadFromImage(Resources::texturesImage);
 
     Player player{};
     player.position = sf::Vector2f(50, 50);
@@ -83,7 +85,7 @@ int main()
         else
         {
             editor.run(window, map);
-                }
+        }
 
         ImGui::SFML::Render(window);
         window.display();
