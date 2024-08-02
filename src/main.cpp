@@ -13,6 +13,7 @@
 #include "../include/editor.h"
 #include "../include/player.h"
 #include "../include/renderer.h"
+#include "../include/resources.h"
 #include <iostream>
 
 int main()
@@ -29,6 +30,10 @@ int main()
 
     Map map(48.0f);
     map.load("./assets/test.map");
+    if (!Resources::wallTexture.loadFromFile("./assets/wall_textures.png"))
+    {
+        std::cerr << "Failed to load wall texture";
+    }
 
     Player player{};
     player.position = sf::Vector2f(50, 50);

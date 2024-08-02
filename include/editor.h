@@ -22,5 +22,6 @@ private:
     bool isFirstMouse{};
     sf::Vector2i lastMousePos;
     sf::View view;
+    int textureNo;
 };
 #endif // !_EDITOR_H
