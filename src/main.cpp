@@ -16,83 +16,63 @@
 #include "../include/resources.h"
 #include <iostream>
 
-int main()
-{
-    sf::RenderWindow window(sf::VideoMode(SCREEN_W, SCREEN_H), "Raycaster",
-                            sf::Style::Close | sf::Style::Titlebar);
-    window.setVerticalSyncEnabled(true);
+int main(int argc, const char **argv) {
+  sf::RenderWindow window(sf::VideoMode(SCREEN_W, SCREEN_H), "Raycaster",
+                          sf::Style::Close | sf::Style::Titlebar);
+  window.setVerticalSyncEnabled(true);
+  if (!ImGui::SFML::Init(window)) {
+    std::cerr << "Failed to init ImGui\n";
+    return 1;
+  }
 
-    if (!ImGui::SFML::Init(window))
-    {
-        std::cerr << "Failed to init ImGui\n";
-        return 1;
+  if (!Resources::texturesImage.loadFromFile("./assets/textures.png")) {
+    std::cerr << "Failed to load textures.png!\n";
+  }
+  Resources::textures.loadFromImage(Resources::texturesImage);
+  Player player{};
+  player.position = sf::Vector2f(50, 50);
+  Renderer renderer{};
+  renderer.init();
+  Editor editor{};
+  editor.init(window);
+
+  Map map{48.0f};
+  if (argc > 1) {
+    editor.savedFileName = argv[1];
+    map.load(editor.savedFileName);
+  }
+
+  enum class State { Editor, Game } state = State::Game;
+
+  sf::Clock gameClock;
+  while (window.isOpen()) {
+    sf::Time deltaTime = gameClock.restart();
+    ImGui::SFML::Update(window, deltaTime);
+    sf::Event event;
+    while (window.pollEvent(event)) {
+      if (event.type == sf::Event::Closed) {
+        window.close();
+      } else if (event.type == sf::Event::KeyPressed &&
+                 event.key.code == sf::Keyboard::Escape) {
+        state = state == State::Game ? State::Editor : State::Game;
+      }
+      if (state == State::Editor) {
+        editor.handleEvent(event);
+      }
+      ImGui::SFML::ProcessEvent(window, event);
     }
-
-    Map map(48.0f);
-
-    map.load("./assets/test.map");
-    if (!Resources::texturesImage.loadFromFile("./assets/textures.png"))
-    {
-        std::cerr << "Failed to load wall texture";
+    window.clear();
+    if (state == State::Game) {
+      window.setView(window.getDefaultView());
+      player.update(deltaTime.asSeconds());
+      renderer.draw3dView(window, player, map);
+    } else {
+      editor.run(window, map);
     }
-    Resources::textures.loadFromImage(Resources::texturesImage);
-
-    Player player{};
-    player.position = sf::Vector2f(50, 50);
-    Renderer renderer{};
-    renderer.init();
-    Editor editor{};
-    editor.init(window);
-    enum class State
-    {
-        Editor,
-        Game
-    } state = State::Game;
-
-    sf::Clock gameClock;
-    while (window.isOpen())
-    {
-        sf::Time deltaTime = gameClock.restart();
-        ImGui::SFML::Update(window, deltaTime);
-
-        sf::Event event;
-        while (window.pollEvent(event))
-        {
-            if (event.type == sf::Event::Closed)
-            {
-                window.close();
-            }
-            else if (event.type == sf::Event::KeyPressed &&
-                     event.key.code == sf::Keyboard::Escape)
-            {
-                state = state == State::Game ? State::Editor : State::Game;
-            }
-            if (state == State::Editor)
-            {
-                editor.handleEvent(event);
-            }
-
-            ImGui::SFML::ProcessEvent(window, event);
-        };
-
-        window.clear();
-        if (state == State::Game)
-        {
-            window.setView(window.getDefaultView());
-            player.update(deltaTime.asSeconds());
-            renderer.draw3dView(window, player, map);
-        }
-        else
-        {
-            editor.run(window, map);
-        }
-
-        ImGui::SFML::Render(window);
-        window.display();
-
-        window.setTitle("Raycaster | " +
-                        std::to_string(1.0f / deltaTime.asSeconds()));
-    }
-
-    ImGui::SFML::Shutdown();
+    ImGui::SFML::Render(window);
+    window.display();
+    window.setTitle("Raycaster | " +
+                    std::to_string(1.0f / deltaTime.asSeconds()));
+  }
+  ImGui::SFML::Shutdown();
 }

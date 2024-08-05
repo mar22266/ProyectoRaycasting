@@ -4,6 +4,7 @@ L_FLAGS = -lsfml-graphics -lsfml-window -lsfml-system -lGL
 
 BIN = raycaster
 BUILD_DIR = ./build
+ARGS = test.map
 SRC_DIR = src
 
 SRCS = $(wildcard $(SRC_DIR)/*.cpp)
@@ -14,7 +15,7 @@ all: run
 
 run: $(BUILD_DIR)/$(BIN)
 	@echo "Running the game..."
-	@$(BUILD_DIR)/$(BIN)
+	@$(BUILD_DIR)/$(BIN) $(ARGS)
 
 $(BUILD_DIR)/$(BIN): $(OBJS)
 	@echo "Linking..."
