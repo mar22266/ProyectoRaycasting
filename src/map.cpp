@@ -17,9 +17,7 @@
 #include <ios>
 #include <resources.h>
 
-
-Map::Map(float cellSize) : cellSize(cellSize), grid() {}
-void Map::draw(sf::RenderTarget &target, int layer) const {
+void Map::draw(sf::RenderTarget &target, float cellSize, int layer) const {
   if (grid.empty()) {
     return;
   }
@@ -46,7 +44,7 @@ void Map::draw(sf::RenderTarget &target, int layer) const {
     }
   }
 }
-float Map::getCellSize() const { return cellSize; }
+
 int Map::getMapCell(int x, int y, int layer) const {
   if (layer < NUM_LAYERS && y >= 0 && y < grid.size() && x >= 0 &&
       x < grid[y].size()) {
@@ -96,7 +94,6 @@ void Map::save(const std::filesystem::path &path) const {
     }
   }
 }
-
 void Map::fill(int layer, int value) {
   if (layer < NUM_LAYERS) {
     for (auto &column : grid) {
@@ -106,10 +103,8 @@ void Map::fill(int layer, int value) {
     }
   }
 }
-
 size_t Map::getWidth() { return grid[0].size(); }
 size_t Map::getHeight() { return grid.size(); }
-
 void Map::resize(size_t width, size_t height) {
   grid.resize(height);
   for (auto &column : grid) {

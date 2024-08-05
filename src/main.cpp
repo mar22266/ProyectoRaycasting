@@ -15,7 +15,6 @@
 #include "../include/renderer.h"
 #include "../include/resources.h"
 #include <iostream>
-
 int main(int argc, const char **argv) {
   sf::RenderWindow window(sf::VideoMode(SCREEN_W, SCREEN_H), "Raycaster",
                           sf::Style::Close | sf::Style::Titlebar);
@@ -24,26 +23,26 @@ int main(int argc, const char **argv) {
     std::cerr << "Failed to init ImGui\n";
     return 1;
   }
-
   if (!Resources::texturesImage.loadFromFile("./assets/textures.png")) {
     std::cerr << "Failed to load textures.png!\n";
   }
   Resources::textures.loadFromImage(Resources::texturesImage);
+
   Player player{};
-  player.position = sf::Vector2f(50, 50);
+  player.position = sf::Vector2f(1.2f, 1.2f);
+
   Renderer renderer{};
   renderer.init();
+
   Editor editor{};
   editor.init(window);
 
-  Map map{48.0f};
+  Map map{};
   if (argc > 1) {
     editor.savedFileName = argv[1];
     map.load(editor.savedFileName);
   }
-
   enum class State { Editor, Game } state = State::Game;
-
   sf::Clock gameClock;
   while (window.isOpen()) {
     sf::Time deltaTime = gameClock.restart();
@@ -64,7 +63,7 @@ int main(int argc, const char **argv) {
     window.clear();
     if (state == State::Game) {
       window.setView(window.getDefaultView());
-      player.update(deltaTime.asSeconds());
+      player.update(deltaTime.asSeconds(), map);
       renderer.draw3dView(window, player, map);
     } else {
       editor.run(window, map);

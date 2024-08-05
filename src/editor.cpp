@@ -16,6 +16,10 @@
 #include <SFML/Graphics/Rect.hpp>
 #include <cstddef>
 #include <algorithm>    
+
+
+constexpr float CELL_SIZE = 48.0f;
+
 void Editor::init(sf::RenderWindow &window) {
   currentLayer = Map::LAYER_WALLS;
   view = window.getView();
@@ -83,35 +87,28 @@ void Editor::run(sf::RenderWindow &window, Map &map) {
   if (ImGui::Button("Clear")) {
     map.fill(currentLayer, 0);
   }
-
   static int newSize[2];
   if (ImGui::Button("Resize")) {
     newSize[0] = map.getWidth();
     newSize[1] = map.getHeight();
     ImGui::OpenPopup("Resize");
   }
-
   if (ImGui::BeginPopupModal("Resize")) {
     ImGui::Text("New Size:");
     ImGui::InputInt2("##newSize", newSize);
     newSize[0] = std::max(0, newSize[0]);
     newSize[1] = std::max(0, newSize[1]);
-
     if (ImGui::Button("OK")) {
       map.resize(newSize[0], newSize[1]);
       ImGui::CloseCurrentPopup();
     }
-
     ImGui::SameLine();
     if (ImGui::Button("Cancel")) {
       ImGui::CloseCurrentPopup();
     }
-
     ImGui::EndPopup();
   }
-
   ImGui::End();
-
   sf::Vector2i mousePos = sf::Mouse::getPosition(window);
   if (sf::Mouse::isButtonPressed(sf::Mouse::Right)) {
     if (isFirstMouse) {
@@ -127,21 +124,25 @@ void Editor::run(sf::RenderWindow &window, Map &map) {
     isFirstMouse = true;
     window.setMouseCursorVisible(true);
   }
+
   if (!ImGui::GetIO().WantCaptureMouse) {
     sf::Vector2f worldPos = window.mapPixelToCoords(mousePos);
-    sf::Vector2i mapPos = (sf::Vector2i)(worldPos / map.getCellSize());
-    cell.setSize(sf::Vector2f(map.getCellSize(), map.getCellSize()));
-    cell.setPosition((sf::Vector2f)mapPos * map.getCellSize());
+    sf::Vector2i mapPos = (sf::Vector2i)(worldPos / CELL_SIZE);
+    cell.setSize(sf::Vector2f(CELL_SIZE, CELL_SIZE));
+    cell.setPosition((sf::Vector2f)mapPos * CELL_SIZE);
     window.draw(cell);
+
     if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
       map.setMapCell(
           mapPos.x, mapPos.y, currentLayer,
           sf::Keyboard::isKeyPressed(sf::Keyboard::LShift) ? 0 : textureNo + 1);
     }
   }
-  map.draw(window, currentLayer);
+
+  map.draw(window, CELL_SIZE, currentLayer);
   window.setView(view);
 }
+
 void Editor::handleEvent(const sf::Event &event) {
   if (event.type == sf::Event::MouseWheelScrolled) {
     float zoom = 1.0f - 0.1f * event.mouseWheelScroll.delta;
