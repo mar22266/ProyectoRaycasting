@@ -6,6 +6,8 @@
 #include <SFML/Window/Keyboard.hpp>
 #include <string>
 #include <SFML/System/Time.hpp>
+#include <iostream>
+#include <vector>
 
 #include "../include/map.h"
 #include "../include/imgui-SFML.h"
@@ -14,7 +16,10 @@
 #include "../include/player.h"
 #include "../include/renderer.h"
 #include "../include/resources.h"
-#include <iostream>
+#include "../include/sprite.h"
+
+
+
 int main(int argc, const char **argv) {
   sf::RenderWindow window(sf::VideoMode(SCREEN_W, SCREEN_H), "Raycaster",
                           sf::Style::Close | sf::Style::Titlebar);
@@ -27,22 +32,24 @@ int main(int argc, const char **argv) {
     std::cerr << "Failed to load textures.png!\n";
   }
   Resources::textures.loadFromImage(Resources::texturesImage);
-
   Player player{};
   player.position = sf::Vector2f(1.2f, 1.2f);
-
   Renderer renderer{};
   renderer.init();
-
   Editor editor{};
   editor.init(window);
-
   Map map{};
   if (argc > 1) {
     editor.savedFileName = argv[1];
     map.load(editor.savedFileName);
   }
+
+  std::vector<Sprite> sprites = {
+      {{2.5f, 2.5f}},
+  };
+
   enum class State { Editor, Game } state = State::Game;
+
   sf::Clock gameClock;
   while (window.isOpen()) {
     sf::Time deltaTime = gameClock.restart();
@@ -64,7 +71,7 @@ int main(int argc, const char **argv) {
     if (state == State::Game) {
       window.setView(window.getDefaultView());
       player.update(deltaTime.asSeconds(), map);
-      renderer.draw3dView(window, player, map);
+      renderer.draw3dView(window, player, map, sprites);
     } else {
       editor.run(window, map);
     }

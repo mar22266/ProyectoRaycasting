@@ -1,28 +1,31 @@
-#ifndef _RENDERER_H_
-#define _RENDERER_H_
+#ifndef _RENDERER_H
+#define _RENDERER_H
 
-#include <SFML/Graphics/RenderStates.hpp>
-#include <SFML/Graphics/Texture.hpp>
-#include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Graphics/Image.hpp>
+#include <SFML/Graphics/RenderStates.hpp>
+#include <SFML/Graphics/Sprite.hpp>
+#include <SFML/Graphics/Texture.hpp>
+#include <cstddef>
+#include <vector>
 
-#include "player.h"
 #include "map.h"
+#include "player.h"
+#include "sprite.h"
 
 constexpr float SCREEN_W = 1500.0f;
 constexpr float SCREEN_H = 1000.0f;
-
-class Renderer
-{
+class Renderer {
 public:
-    void init();
-    void draw3dView(sf::RenderTarget &target, const Player &player, const Map &map);
+  void init();
+  void draw3dView(sf::RenderTarget &target, const Player &player,
+                  const Map &map, const std::vector<Sprite> &sprites);
 
 private:
-    sf::Texture skyTexture;
+  sf::Texture skyTexture;
 
-    sf::Texture screenBuffer;
-    sf::Sprite screenBufferSprite;
+  sf::Texture screenBuffer;
+  sf::Sprite screenBufferSprite;
+  float zBuffer[(size_t)SCREEN_W];
 };
 
-#endif
+#endif // !_RENDERER_H
