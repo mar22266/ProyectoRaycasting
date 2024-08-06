@@ -17,9 +17,7 @@
 #include <cstddef>
 #include <algorithm>    
 
-
 constexpr float CELL_SIZE = 48.0f;
-
 void Editor::init(sf::RenderWindow &window) {
   currentLayer = Map::LAYER_WALLS;
   view = window.getView();
@@ -80,13 +78,12 @@ void Editor::run(sf::RenderWindow &window, Map &map) {
           sf::IntRect(textureNo * textureSize, 0, textureSize, textureSize),
       },
       sf::Vector2f(100.f, 100.f));
-  if (ImGui::Button("Fill")) {
-    map.fill(currentLayer, textureNo + 1);
-  }
+
+  if (ImGui::Button("Fill")) { map.fill(currentLayer, textureNo + 1); }
+
   ImGui::SameLine();
-  if (ImGui::Button("Clear")) {
-    map.fill(currentLayer, 0);
-  }
+  if (ImGui::Button("Clear")) { map.fill(currentLayer, 0); }
+
   static int newSize[2];
   if (ImGui::Button("Resize")) {
     newSize[0] = map.getWidth();
@@ -102,10 +99,10 @@ void Editor::run(sf::RenderWindow &window, Map &map) {
       map.resize(newSize[0], newSize[1]);
       ImGui::CloseCurrentPopup();
     }
+
     ImGui::SameLine();
-    if (ImGui::Button("Cancel")) {
-      ImGui::CloseCurrentPopup();
-    }
+    if (ImGui::Button("Cancel")) { ImGui::CloseCurrentPopup(); }
+
     ImGui::EndPopup();
   }
   ImGui::End();
@@ -124,14 +121,12 @@ void Editor::run(sf::RenderWindow &window, Map &map) {
     isFirstMouse = true;
     window.setMouseCursorVisible(true);
   }
-
   if (!ImGui::GetIO().WantCaptureMouse) {
     sf::Vector2f worldPos = window.mapPixelToCoords(mousePos);
     sf::Vector2i mapPos = (sf::Vector2i)(worldPos / CELL_SIZE);
     cell.setSize(sf::Vector2f(CELL_SIZE, CELL_SIZE));
     cell.setPosition((sf::Vector2f)mapPos * CELL_SIZE);
     window.draw(cell);
-
     if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
       map.setMapCell(
           mapPos.x, mapPos.y, currentLayer,
@@ -140,6 +135,10 @@ void Editor::run(sf::RenderWindow &window, Map &map) {
   }
 
   map.draw(window, CELL_SIZE, currentLayer);
+  if (sf::Keyboard::isKeyPressed(sf::Keyboard::Q)) {
+    map.draw(window, CELL_SIZE, Map::LAYER_WALLS, 180);
+  }
+
   window.setView(view);
 }
 

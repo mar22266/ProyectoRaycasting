@@ -9,6 +9,7 @@
 #include <SFML/Graphics/Sprite.hpp>
 
 #include <cstddef>
+#include <cstdint>
 #include <array>
 #include <fstream>
 #include <iostream>
@@ -17,10 +18,12 @@
 #include <ios>
 #include <resources.h>
 
-void Map::draw(sf::RenderTarget &target, float cellSize, int layer) const {
-  if (grid.empty()) {
-    return;
-  }
+
+
+void Map::draw(sf::RenderTarget &target, float cellSize, int layer,
+               uint8_t alpha) const {
+  if (grid.empty()) { return; }
+
   int textureSize = Resources::textures.getSize().y;
   sf::Vector2f size{cellSize * 0.95f, cellSize * 0.95f};
   sf::Sprite sprite{Resources::textures,
@@ -34,8 +37,9 @@ void Map::draw(sf::RenderTarget &target, float cellSize, int layer) const {
                                           0, textureSize, textureSize));
         sprite.setPosition(sf::Vector2f(x, y) * cellSize +
                            sf::Vector2f(cellSize * 0.025f, cellSize * 0.025f));
+        sprite.setColor(sf::Color(255, 255, 255, alpha));
         target.draw(sprite);
-      } else {
+      } else if (alpha == 255) {
         cell.setFillColor(sf::Color(70, 70, 70));
         cell.setPosition(sf::Vector2f(x, y) * cellSize +
                          sf::Vector2f(cellSize * 0.025f, cellSize * 0.025f));
@@ -44,7 +48,6 @@ void Map::draw(sf::RenderTarget &target, float cellSize, int layer) const {
     }
   }
 }
-
 int Map::getMapCell(int x, int y, int layer) const {
   if (layer < NUM_LAYERS && y >= 0 && y < grid.size() && x >= 0 &&
       x < grid[y].size()) {
@@ -80,9 +83,7 @@ void Map::save(const std::filesystem::path &path) const {
   if (!out.is_open()) {
     std::cerr << "Failed to open file \"" << path << "\" for output\n";
   }
-  if (grid.empty()) {
-    return;
-  }
+  if (grid.empty()) { return; }
   size_t h = grid.size();
   size_t w = grid[0].size();
   out.write(reinterpret_cast<const char *>(&w), sizeof(w));
@@ -103,8 +104,8 @@ void Map::fill(int layer, int value) {
     }
   }
 }
-size_t Map::getWidth() { return grid.empty() ? 0 : grid[0].size(); }
-size_t Map::getHeight() { return grid.size(); }
+size_t Map::getWidth() const { return grid.empty() ? 0 : grid[0].size(); }
+size_t Map::getHeight() const { return grid.size(); }
 void Map::resize(size_t width, size_t height) {
   grid.resize(height);
   for (auto &column : grid) {

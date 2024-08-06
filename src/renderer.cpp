@@ -20,10 +20,14 @@
 #include <cstdint>
 #include <iostream>
 #include <vector>
+
+constexpr float ASPECT = SCREEN_W / SCREEN_H;
 constexpr float PI = 3.141592653589793f;
 constexpr float PLAYER_FOV = 60.0f;
 constexpr float CAMERA_Z = 0.5f * SCREEN_H;
 constexpr size_t MAX_RAYCAST_DEPTH = 64;
+
+
 void Renderer::init() {
   screenBuffer.create(SCREEN_W, SCREEN_H);
   screenBufferSprite.setTexture(screenBuffer);
@@ -37,7 +41,7 @@ void Renderer::draw3dView(sf::RenderTarget &target, const Player &player,
                           const Map &map, std::vector<Sprite> &sprites) {
   float radians = player.angle * PI / 180.0f;
   sf::Vector2f direction{std::cos(radians), std::sin(radians)};
-  sf::Vector2f plane{-direction.y, direction.x * 0.66f};
+  sf::Vector2f plane = sf::Vector2f(-direction.y, direction.x) * ASPECT * .5f;
   sf::Vector2f position = player.position;
   int xOffset = SCREEN_W / PLAYER_TURN_SPEED * player.angle;
   while (xOffset < 0) {
@@ -82,18 +86,19 @@ void Renderer::draw3dView(sf::RenderTarget &target, const Player &player,
         ceilingColor = Resources::texturesImage.getPixel(
             (ceilTex - 1) * textureSize + texCoords.x, texCoords.y);
       }
-      screenPixels[(x + y * (size_t)SCREEN_W) * 4 + 0] = floorColor.r;
-      screenPixels[(x + y * (size_t)SCREEN_W) * 4 + 1] = floorColor.g;
-      screenPixels[(x + y * (size_t)SCREEN_W) * 4 + 2] = floorColor.b;
-      screenPixels[(x + y * (size_t)SCREEN_W) * 4 + 3] = floorColor.a;
-      screenPixels[(x + ((size_t)SCREEN_H - y - 1) * (size_t)SCREEN_W) * 4 +
-                   0] = ceilingColor.r;
-      screenPixels[(x + ((size_t)SCREEN_H - y - 1) * (size_t)SCREEN_W) * 4 +
-                   1] = ceilingColor.g;
-      screenPixels[(x + ((size_t)SCREEN_H - y - 1) * (size_t)SCREEN_W) * 4 +
-                   2] = ceilingColor.b;
-      screenPixels[(x + ((size_t)SCREEN_H - y - 1) * (size_t)SCREEN_W) * 4 +
-                   3] = ceilingColor.a;
+      size_t w = SCREEN_W, h = SCREEN_H;
+      size_t floorPixel = (x + y * w) * 4;
+      size_t ceilPixel = (x + (h - y - 1) * w) * 4;
+
+      screenPixels[floorPixel + 0] = floorColor.r;
+      screenPixels[floorPixel + 1] = floorColor.g;
+      screenPixels[floorPixel + 2] = floorColor.b;
+      screenPixels[floorPixel + 3] = floorColor.a;
+
+      screenPixels[ceilPixel + 0] = ceilingColor.r;
+      screenPixels[ceilPixel + 1] = ceilingColor.g;
+      screenPixels[ceilPixel + 2] = ceilingColor.b;
+      screenPixels[ceilPixel + 3] = ceilingColor.a;
       floor += floorStep;
     }
   }

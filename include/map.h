@@ -1,11 +1,10 @@
-
 #ifndef _MAP_H
 #define _MAP_H
-
 #include <SFML/Graphics/Color.hpp>
 #include <SFML/Graphics/RenderTarget.hpp>
 #include <array>
 #include <cstddef>
+#include <cstdint>
 #include <filesystem>
 #include <string>
 #include <unordered_map>
@@ -22,22 +21,20 @@ public:
       "Floor",
       "Ceiling",
   };
-
   Map() = default;
-
   int getMapCell(int x, int y, int layer) const;
   void setMapCell(int x, int y, int layer, int value);
   void fill(int layer, int value);
-  size_t getWidth();
-  size_t getHeight();
+  size_t getWidth() const;
+  size_t getHeight() const;
   void resize(size_t width, size_t height);
 
-  void draw(sf::RenderTarget &target, float cellSize, int layer) const;
+  void draw(sf::RenderTarget &target, float cellSize, int layer,
+            uint8_t alpha = 255) const;
   void load(const std::filesystem::path &path);
   void save(const std::filesystem::path &path) const;
 
 private:
   std::vector<std::vector<std::array<int, NUM_LAYERS>>> grid;
 };
-
 #endif // !_MAP_H

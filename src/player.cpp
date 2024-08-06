@@ -11,7 +11,7 @@
 constexpr float PI = 3.141592653589793f;
 constexpr float TURN_SPEED = PLAYER_TURN_SPEED;
 constexpr float MOVE_SPEED = 2.5f;
-constexpr float PLAYER_HALF_SIZE = 0.45f;
+constexpr float PLAYER_HALF_SIZE = .2f;
 
 void Player::draw(sf::RenderTarget &target, float cellSize) {
   float size = PLAYER_HALF_SIZE * cellSize;
@@ -19,33 +19,31 @@ void Player::draw(sf::RenderTarget &target, float cellSize) {
   player.setOrigin(size, size);
   player.setPosition(position * cellSize);
   player.setFillColor(sf::Color::Yellow);
-
   sf::RectangleShape line(sf::Vector2f(size * 3.f, cellSize / 30.f));
   line.setPosition(position * cellSize);
   line.setRotation(angle);
   line.setFillColor(sf::Color::Yellow);
-
   target.draw(line);
   target.draw(player);
 }
 
 void Player::update(float deltaTime, const Map &map) {
-  if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) {
+  if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) {
     angle -= TURN_SPEED * deltaTime;
   }
-  if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) {
+  if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) {
     angle += TURN_SPEED * deltaTime;
   }
+
   float radians = angle * PI / 180.0f;
+  float dx = std::cos(radians), dy = std::sin(radians);
+  sf::Vector2f front = {dx, dy}, right = {-dy, dx};
+
   sf::Vector2f move{};
-  if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) {
-    move.x += cos(radians);
-    move.y += sin(radians);
-  }
-  if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)) {
-    move.x -= cos(radians);
-    move.y -= sin(radians);
-  }
+  if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) { move += front; }
+  if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) { move -= right; }
+  if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)) { move -= front; }
+  if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) { move += right; }
 
   float xOffset = move.x > 0.f ? PLAYER_HALF_SIZE : -PLAYER_HALF_SIZE;
   float yOffset = move.y > 0.f ? PLAYER_HALF_SIZE : -PLAYER_HALF_SIZE;
@@ -54,32 +52,24 @@ void Player::update(float deltaTime, const Map &map) {
                          true)) {
     position.x += move.x;
   }
-
   if (!checkMapCollision(map, {position.x, position.y + move.y + yOffset},
                          false)) {
     position.y += move.y;
   }
 }
-
 bool Player::checkMapCollision(const Map &map, sf::Vector2f newPosition,
                                bool xAxis) {
   sf::Vector2f size = {PLAYER_HALF_SIZE, PLAYER_HALF_SIZE};
   sf::Vector2i start = static_cast<sf::Vector2i>(newPosition - size);
   sf::Vector2i end = static_cast<sf::Vector2i>(newPosition + size);
-
   if (xAxis) {
     for (int y = start.y; y <= end.y; y++) {
-      if (map.getMapCell(newPosition.x, y, Map::LAYER_WALLS)) {
-        return true;
-      }
+      if (map.getMapCell(newPosition.x, y, Map::LAYER_WALLS)) { return true; }
     }
   } else {
     for (int x = start.x; x <= end.x; x++) {
-      if (map.getMapCell(x, newPosition.y, Map::LAYER_WALLS)) {
-        return true;
-      }
+      if (map.getMapCell(x, newPosition.y, Map::LAYER_WALLS)) { return true; }
     }
   }
-
   return false;
 }
