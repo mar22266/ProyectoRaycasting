@@ -32,6 +32,12 @@ int main(int argc, const char **argv) {
     std::cerr << "Failed to load textures.png!\n";
   }
   Resources::textures.loadFromImage(Resources::texturesImage);
+
+
+  if (!Resources::sprites.loadFromFile("./assets/sprites2.png")) {
+    std::cerr << "Failed to load sprites.png!\n";
+  }
+
   Player player{};
   player.position = sf::Vector2f(1.2f, 1.2f);
   Renderer renderer{};
@@ -45,7 +51,9 @@ int main(int argc, const char **argv) {
   }
 
   std::vector<Sprite> sprites = {
-      {{2.5f, 2.5f}},
+      {{4.5f, 6.5f}, 0},
+      {{4.5f, 9.5f}, 1},
+      {{4.5f, 12.5f}, 2},
   };
 
   enum class State { Editor, Game } state = State::Game;
