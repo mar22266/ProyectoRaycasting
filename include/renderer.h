@@ -6,18 +6,19 @@
 #include <SFML/Graphics/Texture.hpp>
 #include <cstddef>
 #include <vector>
+
 #include "map.h"
 #include "player.h"
-#include "sprite.h"
-
+#include "thing.h"
 
 constexpr float SCREEN_W = 1500.0f;
 constexpr float SCREEN_H = 1000.0f;
+
 class Renderer {
 public:
-  void init();
+  Renderer();
   void draw3dView(sf::RenderTarget &target, const Player &player,
-                  const Map &map, std::vector<Sprite> &sprites);
+                  const Map &map, std::vector<std::shared_ptr<Thing>> &things);
 
 private:
   sf::Texture skyTexture;

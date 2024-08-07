@@ -18,11 +18,13 @@
 #include <algorithm>    
 
 constexpr float CELL_SIZE = 48.0f;
-void Editor::init(sf::RenderWindow &window) {
-  currentLayer = Map::LAYER_WALLS;
-  view = window.getView();
+
+Editor::Editor(sf::RenderWindow &window)
+    : cell(), isFirstMouse(), view(window.getView()), textureNo(),
+      currentLayer(Map::LAYER_WALLS) {
   cell.setFillColor(sf::Color::Green);
 }
+
 void Editor::run(sf::RenderWindow &window, Map &map) {
   if (ImGui::BeginMainMenuBar()) {
     if (ImGui::BeginMenu("File")) {
@@ -78,12 +80,9 @@ void Editor::run(sf::RenderWindow &window, Map &map) {
           sf::IntRect(textureNo * textureSize, 0, textureSize, textureSize),
       },
       sf::Vector2f(100.f, 100.f));
-
   if (ImGui::Button("Fill")) { map.fill(currentLayer, textureNo + 1); }
-
   ImGui::SameLine();
   if (ImGui::Button("Clear")) { map.fill(currentLayer, 0); }
-
   static int newSize[2];
   if (ImGui::Button("Resize")) {
     newSize[0] = map.getWidth();
@@ -99,10 +98,8 @@ void Editor::run(sf::RenderWindow &window, Map &map) {
       map.resize(newSize[0], newSize[1]);
       ImGui::CloseCurrentPopup();
     }
-
     ImGui::SameLine();
     if (ImGui::Button("Cancel")) { ImGui::CloseCurrentPopup(); }
-
     ImGui::EndPopup();
   }
   ImGui::End();
@@ -133,15 +130,12 @@ void Editor::run(sf::RenderWindow &window, Map &map) {
           sf::Keyboard::isKeyPressed(sf::Keyboard::LShift) ? 0 : textureNo + 1);
     }
   }
-
   map.draw(window, CELL_SIZE, currentLayer);
   if (sf::Keyboard::isKeyPressed(sf::Keyboard::Q)) {
     map.draw(window, CELL_SIZE, Map::LAYER_WALLS, 180);
   }
-
   window.setView(view);
 }
-
 void Editor::handleEvent(const sf::Event &event) {
   if (event.type == sf::Event::MouseWheelScrolled) {
     float zoom = 1.0f - 0.1f * event.mouseWheelScroll.delta;
