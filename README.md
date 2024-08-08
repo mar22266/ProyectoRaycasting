@@ -1,29 +1,54 @@
 # Raycaster Game
+
+## Table of Contents
+- [Demo](#demo)
+- [Description](#description)
+- [New Features](#new-features)
+- [Requirements](#requirements)
+- [Project Structure](#project-structure)
+- [How to Build and Run](#how-to-build-and-run)
+- [Controls](#controls)
+
 ## Demo
 ![Raycaster Gameplay Demo](VideoDemo/Raycasting.gif)
 
 ## Description
-This Raycaster game is developed using C++ and SFML library. It features a 2D/3D rendering mode, dynamic object handling, and an integrated level editor.
+This Raycaster game is developed using C++ and the SFML library. It features a versatile 2D/3D rendering mode, dynamic object handling, and an integrated level editor for creative gameplay experiences.
+
+## New Features
+- **Enhanced Textures**: Added different wall textures, along with detailed textures for the sky and floor.
+- **Map Creation and Editing**: Players can create their own maps, save them, upload them, and edit them using the integrated level editor.
+- **Enhanced Sprites**: Introduced three different sprites in the `test.map`, which is the main map created for initial gameplay.
 
 ## Requirements
-- SFML
-- ImGui-SFML
+- **SFML**: Used for rendering, window management, etc.
+- **ImGui-SFML**: Used for GUI features within the game.
 
 ## Project Structure
-- `main.cpp`: Entry point of the game.
-- `include/`: Contains all the headers.
-- `src/`: Contains all source files.
-- `assets/`: Contains textures and sprites used in the game.
+- **`main.cpp`**: The entry point of the game.
+- **`include/`**: Contains all the header files.
+- **`src/`**: Contains all source files.
+- **`assets/`**: Contains game textures and sprites.
 
 ## How to Build and Run
-1. Ensure you have SFML and ImGui-SFML installed.
-2. Clone the repository and navigate to the main project directory.
-3. Run the following command to build the project: `make`
-4. Run the following command to clean the build files: `make clean`
+1. **Install Dependencies**: Ensure you have SFML and ImGui-SFML installed on your system.
+2. **Clone the Repository**: `https://github.com/mar22266/ProyectoRaycasting.git` then `cd ProyectoRaycasting`
+3. **Build the Project**: `make`
+4. **Clean the Build Files**: `make clean`
+
 
 ## Controls
-- `ESC`: Toggle between game and editor mode.
-- `Tab`: Toggle between 2D and 3D views in the game mode.
-- `W`, `A`, `S`, `D`: Move forward, left, backward, and right, respectively.
-- `Left Arrow`, `Right Arrow`: Rotate left and right.
+Control the game using the following keys:
+- **`ESC`**: Toggle between game and editor modes.
+- **`Tab`**: Switch between 2D and 3D views.
+- **Movement Keys**:
+- **`W`**: Move forward
+- **`A`**: Move left
+- **`S`**: Move backward
+- **`D`**: Move right
+- **Rotation Keys**:
+- **`Left Arrow`**: Rotate left
+- **`Right Arrow`**: Rotate right
+
+
 
