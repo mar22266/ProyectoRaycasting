@@ -1,4 +1,6 @@
 # Raycaster Game
+## Demo
+![Raycaster Gameplay Demo](VideoDemo/Raycasting.gif)
 
 ## Description
 This Raycaster game is developed using C++ and SFML library. It features a 2D/3D rendering mode, dynamic object handling, and an integrated level editor.
