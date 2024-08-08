@@ -115,7 +115,7 @@ int main(int argc, const char **argv) {
     ImGui::SFML::Render(window);
     window.display();
 
-    window.setTitle("Raycaster | " +
+    window.setTitle("Raycaster | FPS: " +
                     std::to_string(1.f / deltaTime.asSeconds()));
   }
 
