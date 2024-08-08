@@ -49,13 +49,12 @@ int main(int argc, const char **argv)
   }
 
   Game game{map};
-
   enum class State
   {
     Editor,
     Game
   } state = State::Game;
-  bool view2d = false;
+  bool view2d = false, game_mode = false;
 
   sf::Clock gameClock;
   while (window.isOpen())
@@ -75,23 +74,35 @@ int main(int argc, const char **argv)
         {
           state = state == State::Game ? State::Editor : State::Game;
         }
+
         if (event.key.code == sf::Keyboard::Tab)
         {
           view2d = !view2d;
         }
+        if (event.key.code == sf::Keyboard::Tilde)
+        {
+          game_mode = !game_mode;
+        }
       }
+
+      if (game_mode)
+      {
+        state = State::Game;
+      }
+
       if (state == State::Editor)
       {
         editor.handleEvent(event);
       }
+
       ImGui::SFML::ProcessEvent(window, event);
     }
 
     window.clear();
     if (state == State::Game)
     {
-      game.update(deltaTime.asSeconds(), map);
-      game.render(window, map, view2d);
+      game.update(deltaTime.asSeconds(), map, game_mode);
+      game.render(window, map, view2d, game_mode);
     }
     else
     {

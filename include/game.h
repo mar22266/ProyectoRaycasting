@@ -4,7 +4,6 @@
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <memory>
 #include <vector>
-
 #include "map.h"
 #include "player.h"
 #include "renderer.h"
@@ -14,8 +13,9 @@ class Game
 {
 public:
     Game(Map &map);
-    void update(float dt, Map &map);
-    void render(sf::RenderWindow &window, const Map &map, bool view2d);
+    void update(float dt, Map &map, bool game_mode);
+    void render(sf::RenderWindow &window, const Map &map, bool view2d,
+                bool game_mode);
 
 private:
     std::vector<std::shared_ptr<Thing>> things;
@@ -24,6 +24,5 @@ private:
 
     float gridSize2d;
 };
-// hi
 
 #endif // !_GAME_H

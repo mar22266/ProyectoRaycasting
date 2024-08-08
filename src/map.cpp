@@ -33,7 +33,6 @@ int Map::getMapCell(int x, int y, int layer) const
     return 0;
   }
 }
-
 void Map::setMapCell(int x, int y, int layer, int value)
 {
   if (layer < NUM_LAYERS && y >= 0 && y < grid.size() && x >= 0 &&
@@ -42,10 +41,8 @@ void Map::setMapCell(int x, int y, int layer, int value)
     grid[y][x][layer] = value;
   }
 }
-
 size_t Map::getWidth() const { return grid.empty() ? 0 : grid[0].size(); }
 size_t Map::getHeight() const { return grid.size(); }
-
 void Map::draw(sf::RenderTarget &target, float cellSize, int layer,
                uint8_t alpha) const
 {
@@ -82,7 +79,6 @@ void Map::draw(sf::RenderTarget &target, float cellSize, int layer,
     }
   }
 }
-
 void Map::fill(int layer, int value)
 {
   if (layer < NUM_LAYERS)
@@ -96,7 +92,6 @@ void Map::fill(int layer, int value)
     }
   }
 }
-
 void Map::resize(size_t width, size_t height)
 {
   grid.resize(height);
@@ -107,12 +102,19 @@ void Map::resize(size_t width, size_t height)
     blockmap[i].resize(width);
   }
 }
-
 void Map::insertInBlockmap(int x, int y, Thing *thing)
 {
   if (y >= 0 && y < blockmap.size() && x >= 0 && x < blockmap[y].size())
   {
     blockmap[y][x].insert(thing);
+  }
+}
+
+void Map::removeFromBlockmap(int x, int y, Thing *thing)
+{
+  if (y >= 0 && y < blockmap.size() && x >= 0 && x < blockmap[y].size())
+  {
+    blockmap[y][x].erase(thing);
   }
 }
 
@@ -127,7 +129,6 @@ std::set<Thing *> Map::getBlockmap(int x, int y) const
     return {};
   }
 }
-
 void Map::load(const std::filesystem::path &path)
 {
   std::ifstream in{path, std::ios::in | std::ios::binary};
@@ -138,7 +139,6 @@ void Map::load(const std::filesystem::path &path)
   size_t w, h;
   in.read(reinterpret_cast<char *>(&w), sizeof(w));
   in.read(reinterpret_cast<char *>(&h), sizeof(h));
-
   grid = std::vector(h, std::vector(w, std::array<int, NUM_LAYERS>()));
   blockmap = std::vector(h, std::vector(w, std::set<Thing *>()));
   for (size_t y = 0; y < grid.size(); y++)

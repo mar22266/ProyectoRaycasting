@@ -1,6 +1,5 @@
 #ifndef _RENDERER_H
 #define _RENDERER_H
-
 #include <SFML/Graphics/Image.hpp>
 #include <SFML/Graphics/RenderStates.hpp>
 #include <SFML/Graphics/Sprite.hpp>
@@ -13,12 +12,14 @@
 
 constexpr float SCREEN_W = 1500.0f;
 constexpr float SCREEN_H = 1000.0f;
+
 class Renderer
 {
 public:
   Renderer();
   void draw3dView(sf::RenderTarget &target, sf::Vector2f position, float angle,
-                  const Map &map, std::vector<std::shared_ptr<Thing>> &things);
+                  const Map &map, std::vector<std::shared_ptr<Thing>> &things,
+                  bool draw_debug = false);
 
 private:
   sf::Texture skyTexture;

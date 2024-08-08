@@ -13,7 +13,7 @@ class Player
 {
 public:
   Player(Thing *thing);
-  void update(float deltaTime, const Map &map);
+  void update(float deltaTime, Map &map, bool ghostmode = false);
 
   Thing *thing;
 };

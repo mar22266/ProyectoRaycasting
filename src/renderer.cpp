@@ -27,7 +27,6 @@ constexpr float PI = 3.141592653589793f;
 constexpr float PLAYER_FOV = 60.0f;
 constexpr float CAMERA_Z = 0.5f * SCREEN_H;
 constexpr size_t MAX_RAYCAST_DEPTH = 64;
-
 Renderer::Renderer()
 {
   screenBuffer.create(SCREEN_W, SCREEN_H);
@@ -41,7 +40,8 @@ Renderer::Renderer()
 
 void Renderer::draw3dView(sf::RenderTarget &target, sf::Vector2f position,
                           float angle, const Map &map,
-                          std::vector<std::shared_ptr<Thing>> &things)
+                          std::vector<std::shared_ptr<Thing>> &things,
+                          bool debug)
 {
   float radians = angle * PI / 180.0f;
   sf::Vector2f direction{std::cos(radians), std::sin(radians)};
@@ -52,6 +52,7 @@ void Renderer::draw3dView(sf::RenderTarget &target, sf::Vector2f position,
   {
     xOffset += skyTexture.getSize().x;
   }
+
   sf::Vertex sky[] = {
       sf::Vertex(sf::Vector2f(0.0f, 0.0f), sf::Vector2f(xOffset, 0.0f)),
       sf::Vertex(sf::Vector2f(0.0f, SCREEN_H),
@@ -183,7 +184,6 @@ void Renderer::draw3dView(sf::RenderTarget &target, sf::Vector2f position,
         textureX = textureSize - textureX - 1;
       if (isHitVertical && rayDir.y < 0)
         textureX = textureSize - textureX - 1;
-
       float brightness = 1.0f - (perpWallDist / (float)MAX_RAYCAST_DEPTH);
       if (isHitVertical)
       {
@@ -191,7 +191,6 @@ void Renderer::draw3dView(sf::RenderTarget &target, sf::Vector2f position,
       }
       sf::Color color =
           sf::Color(255 * brightness, 255 * brightness, 255 * brightness);
-
       walls.append(
           sf::Vertex(sf::Vector2f(i, wallStart), color,
                      sf::Vector2f(textureX + (hit - 1) * textureSize, 0.0f)));
@@ -201,31 +200,24 @@ void Renderer::draw3dView(sf::RenderTarget &target, sf::Vector2f position,
       zBuffer[i] = perpWallDist;
     }
   }
-
   target.draw(walls, {&Resources::textures});
-
   auto getDistance = [position](const auto &sprite)
   {
     return std::pow(position.x - sprite->position.x, 2) +
            std::pow(position.y - sprite->position.y, 2);
   };
-
   auto compare = [getDistance](const auto &a, const auto &b)
   {
     return getDistance(a) > getDistance(b);
   };
-
   std::sort(things.begin(), things.end(), compare);
-
   sf::VertexArray spriteColumns{sf::Lines};
   sf::VertexArray debugColumns{sf::Lines};
   for (const auto &thing : things)
   {
     if (thing->texture < 0)
       continue;
-
     sf::Vector2f spritePos = thing->position - position;
-
     // Inverse Camera Matrix:
     // det = plane.x*dir.y - plane.y*dir.x
     // [ plane.x dir.x ]-1 = 1/det * [ dir.y     -dir.x  ]
@@ -266,6 +258,10 @@ void Renderer::draw3dView(sf::RenderTarget &target, sf::Vector2f position,
       }
     }
   }
+
   target.draw(spriteColumns, {&Resources::sprites});
-  // target.draw(debugColumns);
+  if (debug)
+  {
+    target.draw(debugColumns);
+  }
 }

@@ -10,9 +10,7 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
-
 #include "thing.h"
-
 class Map
 {
 public:
@@ -26,19 +24,17 @@ public:
       "Ceiling",
   };
   Map() = default;
-
   int getMapCell(int x, int y, int layer) const;
   void setMapCell(int x, int y, int layer, int value);
-
   size_t getWidth() const;
   size_t getHeight() const;
   void draw(sf::RenderTarget &target, float cellSize, int layer,
             uint8_t alpha = 255) const;
-
   void fill(int layer, int value);
   void resize(size_t width, size_t height);
 
   void insertInBlockmap(int x, int y, Thing *thing);
+  void removeFromBlockmap(int x, int y, Thing *thing);
   std::set<Thing *> getBlockmap(int x, int y) const;
 
   void load(const std::filesystem::path &path);
@@ -48,5 +44,4 @@ private:
   std::vector<std::vector<std::array<int, NUM_LAYERS>>> grid;
   std::vector<std::vector<std::set<Thing *>>> blockmap;
 };
-
 #endif // !_MAP_H
