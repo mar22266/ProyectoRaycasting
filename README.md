@@ -22,4 +22,6 @@ This Raycaster game is developed using C++ and SFML library. It features a 2D/3D
 ## Controls
 - `ESC`: Toggle between game and editor mode.
 - `Tab`: Toggle between 2D and 3D views in the game mode.
+- `W`, `A`, `S`, `D`: Move forward, left, backward, and right, respectively.
+- `Left Arrow`, `Right Arrow`: Rotate left and right.
 
