@@ -1,5 +1,5 @@
-#include "thing.h"
-#include "map.h"
+#include "../include/thing.h"
+#include "../include/map.h"
 
 #include <SFML/System/Vector2.hpp>
 #include <cmath>
