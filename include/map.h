@@ -13,7 +13,8 @@
 
 #include "thing.h"
 
-class Map {
+class Map
+{
 public:
   static constexpr int LAYER_WALLS = 0;
   static constexpr int LAYER_FLOOR = 1;

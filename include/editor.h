@@ -9,7 +9,8 @@
 #include <string>
 #include "map.h"
 
-class Editor {
+class Editor
+{
 public:
   Editor(sf::RenderWindow &window);
   void run(sf::RenderWindow &window, Map &map);

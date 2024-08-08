@@ -5,7 +5,8 @@
 #include <SFML/System/Vector2.hpp>
 
 constexpr float PLAYER_TURN_SPEED = 150.0f;
-class Player {
+class Player
+{
 public:
   void draw(sf::RenderTarget &target, float cellSize);
   void update(float deltaTime, const Map &map);

@@ -14,7 +14,8 @@
 constexpr float SCREEN_W = 1500.0f;
 constexpr float SCREEN_H = 1000.0f;
 
-class Renderer {
+class Renderer
+{
 public:
   Renderer();
   void draw3dView(sf::RenderTarget &target, const Player &player,

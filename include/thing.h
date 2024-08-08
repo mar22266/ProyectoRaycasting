@@ -3,7 +3,8 @@
 
 #include <SFML/System/Vector2.hpp>
 
-class Thing {
+class Thing
+{
 public:
   Thing(sf::Vector2f position = {}, float size = 0.f, int texture = 0)
       : position(position), size(size), texture(texture) {}
