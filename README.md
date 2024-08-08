@@ -19,6 +19,7 @@ This Raycaster game is developed using C++ and the SFML library. It features a v
 - **Enhanced Textures**: Added different wall textures, along with detailed textures for the sky and floor.
 - **Map Creation and Editing**: Players can create their own maps, save them, upload them, and edit them using the integrated level editor.
 - **Enhanced Sprites**: Introduced three different sprites in the `test.map`, which is the main map created for initial gameplay.
+- **Toggleable Game Modes**: Implemented a game mode and an editor mode. Initially, upon loading a map, the game starts in editor mode. Pressing `Shift` + `~` toggles the game mode on, enabling sprite movement with collision detection. Pressing the same keys again returns the game to editing mode.
 
 ## Requirements
 - **SFML**: Used for rendering, window management, etc.
@@ -49,6 +50,7 @@ Control the game using the following keys:
 - **Rotation Keys**:
 - **`Left Arrow`**: Rotate left
 - **`Right Arrow`**: Rotate right
-
+- **Toggle Game Mode**:
+- **`Shift` + `~`**: Toggle between playing and editing modes.
 
 
